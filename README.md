@@ -1,78 +1,69 @@
-# Lunch with Gareth
+# React + TypeScript + Vite
 
-## Overview
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-**Lunch with Gareth** is a mobile-first PWA for those of us with a friend who has a mysterious, chronic case of *wallet amnesia*. In my case, that’s Gareth. Whether it’s lunch, coffee, or “I’ll get you next time,” I’m usually the one picking up the tab.
+Currently, two official plugins are available:
 
-This app lets me snap a photo of the receipt, OCR the details, and - because we live in the future - send a Nostr event asking Gareth (or anyone else) for their share in sats. It keeps a local history of all events, so I can track the endless parade of “I owe you” moments.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-You can:
-- Split the bill equally between participants
-- Shout the entire bill yourself
-- Mark that the other person picked up the bill
+## Expanding the ESLint configuration
 
-The goal is simple: a minimal, fun way to settle up and poke fun at the friend who never seems to reach for their card.
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
----
+```js
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-## How it Works
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
 
-1. **Scan the Receipt**  
-   Open the app and snap a photo of the receipt. The app uses OCR to pull key details like merchant, date, and total.
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
 
-2. **Review & Confirm**  
-   Correct OCR data if needed. Optionally add tip or adjust total.
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-3. **Select Participants**  
-   Pick from Nostr contacts or paste pubkeys.
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-4. **Pick the Payment Mode**  
-   - **Split**  
-   - **I Pay All**  
-   - **They Pay All**
-
-5. **Send the Request**  
-   The app creates and signs a Nostr event. Optionally attach receipt image or hash. Publish to your relays.
-
-6. **Track Payments**  
-   Use History to see paid vs unpaid.
-
----
-
-## Features
-
-- **Receipt Scanning** with OCR
-- **Local Storage** of receipts and events
-- **Optional Cloud Backup**
-- **Nostr Integration** for payment requests
-- **History View**
-- **Flexible Payment Modes**
-
----
-
-## Screenshots
-
-*(Add screenshots here when available)*
-
----
-
-## Roadmap
-
-- [ ] Nostr follows as in-app contacts
-- [ ] Push notifications on payment confirmation
-- [ ] Cloud OCR option
-- [ ] Custom split amounts
-
----
-
-## Build & Run
-
-*(To be added later)*
-
----
-
-## License
-
-This project is licensed under the **Mozilla Public License 2.0** - see the [LICENSE](LICENSE) file.
-
----
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
