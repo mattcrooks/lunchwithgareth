@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system for Lunch with Gareth - Nostr bill splitting PWA */
+
+@layer base {
+  :root {
+    /* App Background */
+    --background: 240 8% 98%;
+    --foreground: 240 10% 12%;
+
+    /* Cards and Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 12%;
+    --card-subtle: 240 5% 96%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 12%;
+
+    /* Primary - Purple/Blue Gradient Theme */
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 258 85% 75%;
+    --primary-dark: 258 95% 56%;
+
+    /* Secondary - Clean Grays */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 24%;
+
+    /* Muted */
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    /* Accent - Success Green */
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 142 70% 45%;
+
+    /* Warning - Pending Orange */
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 25 90% 65%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and Inputs */
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 258 90% 66%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%), hsl(280 85% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(240 5% 96%), hsl(240 8% 98%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 70% 45%));
+
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(240 10% 12% / 0.1);
+    --shadow-elevated: 0 8px 32px -8px hsl(240 10% 12% / 0.15);
+    --shadow-primary: 0 4px 20px -4px hsl(258 90% 66% / 0.3);
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    /* App Background */
+    --background: 240 10% 8%;
+    --foreground: 240 5% 96%;
+
+    /* Cards and Surfaces */
+    --card: 240 10% 12%;
+    --card-foreground: 240 5% 96%;
+    --card-subtle: 240 8% 15%;
+
+    /* Popover */
+    --popover: 240 10% 12%;
+    --popover-foreground: 240 5% 96%;
+
+    /* Primary - Purple/Blue Gradient Theme */
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 258 85% 75%;
+    --primary-dark: 258 95% 56%;
+
+    /* Secondary - Dark Grays */
+    --secondary: 240 8% 18%;
+    --secondary-foreground: 240 5% 96%;
+
+    /* Muted */
+    --muted: 240 8% 18%;
+    --muted-foreground: 240 5% 65%;
+
+    /* Accent - Success Green */
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 142 70% 45%;
+
+    /* Warning - Pending Orange */
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 25 90% 65%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and Inputs */
+    --border: 240 8% 20%;
+    --input: 240 8% 20%;
+    --ring: 258 90% 66%;
+
+    /* Gradients (same in dark mode) */
+    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%), hsl(280 85% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(240 8% 18%), hsl(240 10% 12%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 70% 45%));
+
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(240 10% 5% / 0.3);
+    --shadow-elevated: 0 8px 32px -8px hsl(240 10% 5% / 0.4);
+    --shadow-primary: 0 4px 20px -4px hsl(258 90% 66% / 0.4);
+  }
+
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+}
