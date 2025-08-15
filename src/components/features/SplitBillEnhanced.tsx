@@ -1,20 +1,34 @@
 // Enhanced SplitBill component with full integration
 // Implements REQ-SPL-001, REQ-SPL-002, REQ-CTC-001, REQ-CTC-002, REQ-EVT-001
 
-import React, { useState, useEffect } from 'react';
-import { Users, Plus, Minus, Zap, QrCodeIcon, UserPlus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/enhanced-button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { contactManager, Contact } from '@/lib/contacts';
-import { BillSplitService } from '@/lib/billSplit';
-import { FxRate } from '@/lib/fx';
-import { useAuthStore } from '@/store/auth';
+import React, { useState, useEffect } from "react";
+import {
+  Users,
+  Plus,
+  Minus,
+  Zap,
+  QrCodeIcon,
+  UserPlus,
+  Search,
+} from "lucide-react";
+import { Button } from "@/components/ui/enhanced-button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { contactManager, Contact } from "@/lib/contacts";
+import { BillSplitService } from "@/lib/billSplit";
+import { FxRate, FxManager } from "@/lib/fx";
+import { useAuthStore } from "@/store/auth";
 
 interface Participant {
   id: string;
@@ -28,27 +42,34 @@ interface SplitBillEnhancedProps {
     imageBlob: Blob;
     totalFiat: number;
     currency: string;
-    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Other';
+    mealType: "Breakfast" | "Lunch" | "Dinner" | "Other";
     datetime: Date;
     fxRate: FxRate;
     totalSats: number;
     rhash: string;
   };
-  onComplete: (result: { success: boolean; receiptId?: string; eventId?: string; error?: string }) => void;
+  onComplete: (result: {
+    success: boolean;
+    receiptId?: string;
+    eventId?: string;
+    error?: string;
+  }) => void;
   onBack: () => void;
 }
 
-export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({ 
-  receiptData, 
-  onComplete, 
-  onBack 
+export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
+  receiptData,
+  onComplete,
+  onBack,
 }) => {
-  const [splitMode, setSplitMode] = useState<'equal' | 'custom'>('equal');
-  const [paymentFlow, setPaymentFlow] = useState<'split' | 'i-pay-all' | 'they-pay-all'>('split');
+  const [splitMode, setSplitMode] = useState<"equal" | "custom">("equal");
+  const [paymentFlow, setPaymentFlow] = useState<
+    "split" | "i-pay-all" | "they-pay-all"
+  >("split");
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
-  const [contactSearch, setContactSearch] = useState('');
-  const [manualPubkey, setManualPubkey] = useState('');
+  const [contactSearch, setContactSearch] = useState("");
+  const [manualPubkey, setManualPubkey] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
 
@@ -65,28 +86,31 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
 
   // Update participants when split mode changes
   useEffect(() => {
-    if (splitMode === 'equal' && participants.length > 0) {
+    if (splitMode === "equal" && participants.length > 0) {
       recalculateEqualSplit();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [splitMode, participants.length]);
 
   const recalculateEqualSplit = () => {
     if (participants.length === 0) return;
-    
-    const shares = BillSplitService.calculateEqualSplit(receiptData.totalSats, participants.length);
+
+    const shares = BillSplitService.calculateEqualSplit(
+      receiptData.totalSats,
+      participants.length
+    );
     const newParticipants = participants.map((p, index) => ({
       ...p,
       shareSats: shares[index],
-      sharePercent: (shares[index] / receiptData.totalSats) * 100
+      sharePercent: (shares[index] / receiptData.totalSats) * 100,
     }));
-    
+
     setParticipants(newParticipants);
   };
 
   const addParticipant = (contact: Contact) => {
     // Check if already added
-    if (participants.some(p => p.contact.pubkey === contact.pubkey)) {
+    if (participants.some((p) => p.contact.pubkey === contact.pubkey)) {
       return;
     }
 
@@ -94,34 +118,40 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
       id: contact.pubkey,
       contact,
       shareSats: 0,
-      sharePercent: 0
+      sharePercent: 0,
     };
 
     const newParticipants = [...participants, newParticipant];
     setParticipants(newParticipants);
 
     // Recalculate if equal split
-    if (splitMode === 'equal') {
-      const shares = BillSplitService.calculateEqualSplit(receiptData.totalSats, newParticipants.length);
+    if (splitMode === "equal") {
+      const shares = BillSplitService.calculateEqualSplit(
+        receiptData.totalSats,
+        newParticipants.length
+      );
       const updatedParticipants = newParticipants.map((p, index) => ({
         ...p,
         shareSats: shares[index],
-        sharePercent: (shares[index] / receiptData.totalSats) * 100
+        sharePercent: (shares[index] / receiptData.totalSats) * 100,
       }));
       setParticipants(updatedParticipants);
     }
   };
 
   const removeParticipant = (id: string) => {
-    const newParticipants = participants.filter(p => p.id !== id);
+    const newParticipants = participants.filter((p) => p.id !== id);
     setParticipants(newParticipants);
-    
-    if (splitMode === 'equal' && newParticipants.length > 0) {
-      const shares = BillSplitService.calculateEqualSplit(receiptData.totalSats, newParticipants.length);
+
+    if (splitMode === "equal" && newParticipants.length > 0) {
+      const shares = BillSplitService.calculateEqualSplit(
+        receiptData.totalSats,
+        newParticipants.length
+      );
       const updatedParticipants = newParticipants.map((p, index) => ({
         ...p,
         shareSats: shares[index],
-        sharePercent: (shares[index] / receiptData.totalSats) * 100
+        sharePercent: (shares[index] / receiptData.totalSats) * 100,
       }));
       setParticipants(updatedParticipants);
     }
@@ -129,9 +159,11 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
 
   const updateParticipantShare = (id: string, sharePercent: number) => {
     const shareSats = Math.floor((receiptData.totalSats * sharePercent) / 100);
-    setParticipants(participants.map(p => 
-      p.id === id ? { ...p, sharePercent, shareSats } : p
-    ));
+    setParticipants(
+      participants.map((p) =>
+        p.id === id ? { ...p, sharePercent, shareSats } : p
+      )
+    );
   };
 
   const addManualContact = async () => {
@@ -141,7 +173,7 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
       const contact = await contactManager.addContactByPubkey(manualPubkey);
       if (contact) {
         addParticipant(contact);
-        setManualPubkey('');
+        setManualPubkey("");
         setShowAddContact(false);
       }
     } catch (error) {
@@ -149,17 +181,29 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
     }
   };
 
-  const filteredContacts = availableContacts.filter(contact =>
-    contactSearch === '' || 
-    contactManager.getDisplayName(contact.pubkey).toLowerCase().includes(contactSearch.toLowerCase()) ||
-    contact.pubkey.toLowerCase().includes(contactSearch.toLowerCase())
+  const filteredContacts = availableContacts.filter(
+    (contact) =>
+      contactSearch === "" ||
+      contactManager
+        .getDisplayName(contact.pubkey)
+        .toLowerCase()
+        .includes(contactSearch.toLowerCase()) ||
+      contact.pubkey.toLowerCase().includes(contactSearch.toLowerCase())
   );
 
   const isValidSplit = () => {
     if (participants.length === 0) return false;
-    
-    const totalAllocated = participants.reduce((sum, p) => sum + p.shareSats, 0);
-    return BillSplitService.validateSplit(receiptData.totalSats, participants.map(p => p.shareSats)) && totalAllocated > 0;
+
+    const totalAllocated = participants.reduce(
+      (sum, p) => sum + p.shareSats,
+      0
+    );
+    return (
+      BillSplitService.validateSplit(
+        receiptData.totalSats,
+        participants.map((p) => p.shareSats)
+      ) && totalAllocated > 0
+    );
   };
 
   const handleCreateRequest = async () => {
@@ -171,15 +215,19 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
 
     try {
       // Get device password for signing
-      const devicePassword = prompt('Enter your device password to sign the request:');
+      const devicePassword = prompt(
+        "Enter your device password to sign the request:"
+      );
       if (!devicePassword) {
         setIsPublishing(false);
         return;
       }
 
-      const currentKey = storedKeys.find(k => k.pubkey === currentUser.pubkey);
+      const currentKey = storedKeys.find(
+        (k) => k.pubkey === currentUser.pubkey
+      );
       if (!currentKey) {
-        throw new Error('No stored key found for current user');
+        throw new Error("No stored key found for current user");
       }
 
       // Prepare request data
@@ -188,12 +236,12 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
         totalFiat: receiptData.totalFiat,
         currency: receiptData.currency,
         mealType: receiptData.mealType,
-        participants: participants.map(p => ({
+        participants: participants.map((p) => ({
           pubkey: p.contact.pubkey,
-          shareSats: p.shareSats
+          shareSats: p.shareSats,
         })),
         flow: paymentFlow,
-        datetime: receiptData.datetime
+        datetime: receiptData.datetime,
       };
 
       // Create the bill split request
@@ -207,14 +255,13 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
         success: result.success,
         receiptId: result.receiptId,
         eventId: result.eventId,
-        error: result.error
+        error: result.error,
       });
-
     } catch (error) {
-      console.error('Failed to create bill split request:', error);
+      console.error("Failed to create bill split request:", error);
       onComplete({
         success: false,
-        error: (error as Error).message
+        error: (error as Error).message,
       });
     } finally {
       setIsPublishing(false);
@@ -225,10 +272,19 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
     <div className="p-4 space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Split the Bill</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Split the Bill
+        </h1>
         <div className="text-muted-foreground">
-          <p>${receiptData.totalFiat.toFixed(2)} → {receiptData.totalSats.toLocaleString()} sats</p>
-          <p className="text-xs">Rate: 1 {receiptData.currency} = {receiptData.fxRate.rate.toLocaleString()} sats</p>
+          <p>
+            {FxManager.getCurrencySymbol(receiptData.currency)}
+            {receiptData.totalFiat.toFixed(2)} →{" "}
+            {receiptData.totalSats.toLocaleString()} sats
+          </p>
+          <p className="text-xs">
+            Rate: 1 {receiptData.currency} ={" "}
+            {receiptData.fxRate.rate.toLocaleString()} sats
+          </p>
         </div>
       </div>
 
@@ -240,9 +296,13 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
         <CardContent>
           <div className="grid grid-cols-1 gap-2">
             {[
-              { id: 'split', label: 'Everyone pays their share', icon: Users },
-              { id: 'i-pay-all', label: 'I pay everything', icon: Zap },
-              { id: 'they-pay-all', label: 'Others pay everything', icon: Users },
+              { id: "split", label: "Everyone pays their share", icon: Users },
+              { id: "i-pay-all", label: "I pay everything", icon: Zap },
+              {
+                id: "they-pay-all",
+                label: "Others pay everything",
+                icon: Users,
+              },
             ].map((flow) => {
               const Icon = flow.icon;
               return (
@@ -305,7 +365,9 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
                             addParticipant(contact);
                             setShowAddContact(false);
                           }}
-                          disabled={participants.some(p => p.contact.pubkey === contact.pubkey)}
+                          disabled={participants.some(
+                            (p) => p.contact.pubkey === contact.pubkey
+                          )}
                         >
                           <div className="text-left">
                             <div className="font-medium">
@@ -322,7 +384,9 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
 
                   {/* Manual entry */}
                   <div className="border-t pt-4">
-                    <Label htmlFor="manual-pubkey">Or Enter Pubkey Manually</Label>
+                    <Label htmlFor="manual-pubkey">
+                      Or Enter Pubkey Manually
+                    </Label>
                     <div className="flex gap-2 mt-2">
                       <Input
                         id="manual-pubkey"
@@ -330,7 +394,10 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
                         value={manualPubkey}
                         onChange={(e) => setManualPubkey(e.target.value)}
                       />
-                      <Button onClick={addManualContact} disabled={!manualPubkey.trim()}>
+                      <Button
+                        onClick={addManualContact}
+                        disabled={!manualPubkey.trim()}
+                      >
                         Add
                       </Button>
                     </div>
@@ -352,15 +419,15 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
               {/* Split Mode Toggle */}
               <div className="flex gap-2 mb-4">
                 <Button
-                  variant={splitMode === 'equal' ? "gradient" : "outline"}
-                  onClick={() => setSplitMode('equal')}
+                  variant={splitMode === "equal" ? "gradient" : "outline"}
+                  onClick={() => setSplitMode("equal")}
                   className="flex-1"
                 >
                   Equal Split
                 </Button>
                 <Button
-                  variant={splitMode === 'custom' ? "gradient" : "outline"}
-                  onClick={() => setSplitMode('custom')}
+                  variant={splitMode === "custom" ? "gradient" : "outline"}
+                  onClick={() => setSplitMode("custom")}
                   className="flex-1"
                 >
                   Custom Split
@@ -370,17 +437,22 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
               {/* Participants List */}
               <div className="space-y-3">
                 {participants.map((participant) => (
-                  <div key={participant.id} className="flex items-center gap-3 p-3 bg-card-subtle rounded-lg">
+                  <div
+                    key={participant.id}
+                    className="flex items-center gap-3 p-3 bg-card-subtle rounded-lg"
+                  >
                     <div className="flex-1">
                       <div className="font-medium">
-                        {contactManager.getDisplayName(participant.contact.pubkey)}
+                        {contactManager.getDisplayName(
+                          participant.contact.pubkey
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {participant.contact.pubkey.slice(0, 16)}...
                       </div>
                     </div>
-                    
-                    {splitMode === 'equal' ? (
+
+                    {splitMode === "equal" ? (
                       <Badge variant="secondary">
                         {participant.shareSats.toLocaleString()} sats
                       </Badge>
@@ -389,7 +461,12 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
                         <Input
                           type="number"
                           value={participant.sharePercent.toFixed(1)}
-                          onChange={(e) => updateParticipantShare(participant.id, parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateParticipantShare(
+                              participant.id,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
                           className="w-20 h-8 text-center"
                           min="0"
                           max="100"
@@ -401,7 +478,7 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
                         </Badge>
                       </div>
                     )}
-                    
+
                     <Button
                       variant="ghost"
                       size="icon"
@@ -419,7 +496,10 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
                 <div className="flex justify-between items-center text-sm">
                   <span>Total Allocated:</span>
                   <span className="font-medium">
-                    {participants.reduce((sum, p) => sum + p.shareSats, 0).toLocaleString()} / {receiptData.totalSats.toLocaleString()} sats
+                    {participants
+                      .reduce((sum, p) => sum + p.shareSats, 0)
+                      .toLocaleString()}{" "}
+                    / {receiptData.totalSats.toLocaleString()} sats
                   </span>
                 </div>
                 {!isValidSplit() && participants.length > 0 && (
@@ -437,23 +517,23 @@ export const SplitBillEnhanced: React.FC<SplitBillEnhancedProps> = ({
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={onBack}
           className="flex-1"
           disabled={isPublishing}
         >
           Back
         </Button>
-        <Button 
-          variant="gradient" 
-          size="lg" 
+        <Button
+          variant="gradient"
+          size="lg"
           className="flex-2"
           disabled={!isValidSplit() || isPublishing}
           onClick={handleCreateRequest}
         >
           {isPublishing ? (
-            'Publishing...'
+            "Publishing..."
           ) : (
             <>
               <Zap className="w-4 h-4 mr-2" />

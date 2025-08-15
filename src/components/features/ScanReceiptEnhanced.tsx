@@ -1,23 +1,36 @@
 // Enhanced ScanReceipt component with full integration
 // Implements REQ-REC-001, REQ-REC-003, REQ-CUR-001
 
-import React, { useState, useEffect } from 'react';
-import { Camera, Upload, DollarSign, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/enhanced-button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FxManager, FxRate } from '@/lib/fx';
-import { HashManager } from '@/lib/ids';
+import React, { useState, useEffect } from "react";
+import {
+  Camera,
+  Upload,
+  DollarSign,
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/enhanced-button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FxManager, FxRate, SUPPORTED_CURRENCIES } from "@/lib/fx";
+import { HashManager } from "@/lib/ids";
 
 interface ScanReceiptProps {
   onContinue: (data: {
     imageBlob: Blob;
     totalFiat: number;
     currency: string;
-    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Other';
+    mealType: "Breakfast" | "Lunch" | "Dinner" | "Other";
     datetime: Date;
     fxRate: FxRate;
     totalSats: number;
@@ -25,13 +38,19 @@ interface ScanReceiptProps {
   }) => void;
 }
 
-export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) => {
+export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
+  onContinue,
+}) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
-  const [total, setTotal] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Other'>('Lunch');
-  const [datetime, setDatetime] = useState(new Date().toISOString().slice(0, 16));
+  const [total, setTotal] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [mealType, setMealType] = useState<
+    "Breakfast" | "Lunch" | "Dinner" | "Other"
+  >("Lunch");
+  const [datetime, setDatetime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
   const [fxRate, setFxRate] = useState<FxRate | null>(null);
   const [fxLoading, setFxLoading] = useState(false);
   const [fxError, setFxError] = useState<string | null>(null);
@@ -41,10 +60,10 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
   useEffect(() => {
     const fetchRate = async () => {
       if (!currency) return;
-      
+
       setFxLoading(true);
       setFxError(null);
-      
+
       try {
         const rate = await FxManager.getCurrentRate(currency);
         setFxRate(rate);
@@ -59,23 +78,25 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
     fetchRate();
   }, [currency]);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file');
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file");
         return;
       }
 
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('Image file is too large. Please select an image under 10MB.');
+        alert("Image file is too large. Please select an image under 10MB.");
         return;
       }
 
       setImageBlob(file);
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -94,12 +115,12 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
     }
 
     setIsProcessing(true);
-    
+
     try {
       const totalFiat = parseFloat(total);
       const totalSats = calculateSats(totalFiat, fxRate);
       const rhash = await HashManager.hashReceiptImage(imageBlob);
-      
+
       onContinue({
         imageBlob,
         totalFiat,
@@ -108,11 +129,11 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
         datetime: new Date(datetime),
         fxRate,
         totalSats,
-        rhash
+        rhash,
       });
     } catch (error) {
-      console.error('Error processing receipt:', error);
-      alert('Failed to process receipt. Please try again.');
+      console.error("Error processing receipt:", error);
+      alert("Failed to process receipt. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -124,8 +145,12 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
     <div className="p-4 space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Scan Receipt</h1>
-        <p className="text-muted-foreground">Capture your receipt to start splitting the bill</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Scan Receipt
+        </h1>
+        <p className="text-muted-foreground">
+          Capture your receipt to start splitting the bill
+        </p>
       </div>
 
       {/* Image Capture */}
@@ -177,8 +202,8 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
                 alt="Receipt preview"
                 className="w-full max-h-64 object-contain rounded-lg"
               />
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   setImagePreview(null);
@@ -202,29 +227,35 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div className="col-span-2">
-              <Label htmlFor="total">Total Amount</Label>
+              <Label htmlFor="total">
+                Total Amount ({FxManager.getCurrencySymbol(currency)})
+              </Label>
               <Input
                 id="total"
-                placeholder="0.00"
+                placeholder={`0.00 ${FxManager.getCurrencySymbol(currency)}`}
                 value={total}
                 onChange={(e) => setTotal(e.target.value)}
-                className="text-lg font-semibold"
+                className="text-lg font-semibold "
                 type="number"
                 step="0.01"
                 min="0"
               />
             </div>
-            <div>
+            <div className="col-span-2">
               <Label htmlFor="currency">Currency</Label>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  {/* Add more currencies when supported */}
+                  {SUPPORTED_CURRENCIES.map((curr) => (
+                    <SelectItem key={curr} value={curr}>
+                      {FxManager.getCurrencySymbol(curr)} {curr} -{" "}
+                      {FxManager.getCurrencyName(curr)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -232,7 +263,12 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
 
           <div>
             <Label htmlFor="mealType">Meal Type</Label>
-            <Select value={mealType} onValueChange={(value: 'Breakfast' | 'Lunch' | 'Dinner' | 'Other') => setMealType(value)}>
+            <Select
+              value={mealType}
+              onValueChange={(
+                value: "Breakfast" | "Lunch" | "Dinner" | "Other"
+              ) => setMealType(value)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -244,7 +280,7 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
               </SelectContent>
             </Select>
           </div>
-          
+
           <div>
             <Label htmlFor="date">Date & Time</Label>
             <div className="flex items-center gap-2">
@@ -282,9 +318,18 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
                 <div className="space-y-1">
-                  <div>Exchange rate: 1 {currency} = {fxRate.rate.toLocaleString()} sats</div>
-                  <div>Total: {calculateSats(parseFloat(total), fxRate).toLocaleString()} sats</div>
-                  <div className="text-xs text-muted-foreground">Source: {fxRate.source}</div>
+                  <div>
+                    Exchange rate: 1 {currency} = {fxRate.rate.toLocaleString()}{" "}
+                    sats
+                  </div>
+                  <div>
+                    Total:{" "}
+                    {calculateSats(parseFloat(total), fxRate).toLocaleString()}{" "}
+                    sats
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Source: {fxRate.source}
+                  </div>
                 </div>
               </AlertDescription>
             </Alert>
@@ -293,14 +338,14 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({ onContinue }) 
       </Card>
 
       {/* Continue Button */}
-      <Button 
-        variant="gradient" 
-        size="lg" 
+      <Button
+        variant="gradient"
+        size="lg"
         className="w-full"
         disabled={!isValid}
         onClick={handleContinue}
       >
-        {isProcessing ? 'Processing...' : 'Continue to Split Bill'}
+        {isProcessing ? "Processing..." : "Continue to Split Bill"}
       </Button>
     </div>
   );
