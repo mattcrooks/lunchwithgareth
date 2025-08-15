@@ -21,7 +21,7 @@ type MainView = "welcome" | "scan" | "split" | "history" | "settings";
 type Tab = "scan" | "history" | "settings";
 
 interface ReceiptData {
-  imageBlob: Blob;
+  imageBlob: Blob | null;
   totalFiat: number;
   currency: string;
   mealType: "Breakfast" | "Lunch" | "Dinner" | "Other";

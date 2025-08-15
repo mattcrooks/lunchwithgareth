@@ -23,11 +23,11 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FxManager, FxRate, SUPPORTED_CURRENCIES } from "@/lib/fx";
-import { HashManager } from "@/lib/ids";
+import { HashManager, IdGenerator } from "@/lib/ids";
 
 interface ScanReceiptProps {
   onContinue: (data: {
-    imageBlob: Blob;
+    imageBlob: Blob | null;
     totalFiat: number;
     currency: string;
     mealType: "Breakfast" | "Lunch" | "Dinner" | "Other";
@@ -110,7 +110,7 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
   };
 
   const handleContinue = async () => {
-    if (!imageBlob || !total || !fxRate) {
+    if (!total || !fxRate) {
       return;
     }
 
@@ -119,7 +119,11 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
     try {
       const totalFiat = parseFloat(total);
       const totalSats = calculateSats(totalFiat, fxRate);
-      const rhash = await HashManager.hashReceiptImage(imageBlob);
+      
+      // Generate hash for the receipt - use a default hash if no image
+      const rhash = imageBlob 
+        ? await HashManager.hashReceiptImage(imageBlob)
+        : IdGenerator.generateReceiptId(); // Use a random ID if no image
 
       onContinue({
         imageBlob,
@@ -139,7 +143,7 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
     }
   };
 
-  const isValid = imageBlob && total && fxRate && !fxLoading && !isProcessing;
+  const isValid = total && fxRate && !fxLoading && !isProcessing;
 
   return (
     <div className="p-4 space-y-6">
@@ -149,7 +153,7 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
           Scan Receipt
         </h1>
         <p className="text-muted-foreground">
-          Capture your receipt to start splitting the bill
+          Add receipt details to split the bill. Image upload is optional.
         </p>
       </div>
 
@@ -161,9 +165,9 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">Add Receipt Image</h3>
+              <h3 className="font-semibold mb-2">Add Receipt Image (Optional)</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Take a photo or upload an existing image
+                Take a photo or upload an existing image to keep a record
               </p>
               <div className="space-y-2">
                 <Button variant="gradient" className="w-full" asChild>

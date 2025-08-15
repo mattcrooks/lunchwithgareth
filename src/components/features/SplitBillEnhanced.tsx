@@ -39,7 +39,7 @@ interface Participant {
 
 interface SplitBillEnhancedProps {
   receiptData: {
-    imageBlob: Blob;
+    imageBlob: Blob | null;
     totalFiat: number;
     currency: string;
     mealType: "Breakfast" | "Lunch" | "Dinner" | "Other";

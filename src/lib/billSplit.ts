@@ -13,7 +13,7 @@ import { contactManager } from './contacts';
 import { utils } from 'nostr-tools';
 
 export interface BillSplitRequest {
-  imageBlob: Blob;
+  imageBlob: Blob | null;
   totalFiat: number;
   currency: string;
   mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Other';
@@ -58,8 +58,10 @@ export class BillSplitService {
       const receiptId = IdGenerator.generateReceiptId();
       const requestId = IdGenerator.generateRequestId();
       
-      // Step 4: Hash receipt image (REQ-EVT-003)
-      const rhash = await HashManager.hashReceiptImage(request.imageBlob);
+      // Step 4: Hash receipt image or generate ID if no image (REQ-EVT-003)
+      const rhash = request.imageBlob 
+        ? await HashManager.hashReceiptImage(request.imageBlob)
+        : IdGenerator.generateReceiptId();
       
       // Step 5: Prepare participants with proper status
       const participants: Participant[] = request.participants.map(p => ({
@@ -101,7 +103,11 @@ export class BillSplitService {
       };
       
       await storage.saveReceipt(storedReceipt);
-      await storage.saveImage(receiptId, request.imageBlob);
+      
+      // Only save image if one was provided
+      if (request.imageBlob) {
+        await storage.saveImage(receiptId, request.imageBlob);
+      }
       
       // Step 8: Add audit entry (REQ-LOG-001)
       await storage.addAuditEntry({
