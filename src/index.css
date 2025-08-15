@@ -148,4 +148,69 @@
   .safe-area-pt {
     padding-top: env(safe-area-inset-top);
   }
+
+  /* Enhanced mobile keyboard and viewport handling */
+  .mobile-viewport {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for modern browsers */
+    min-height: -webkit-fill-available; /* iOS Safari support */
+  }
+
+  /* Prevent content jump when keyboard appears */
+  .keyboard-safe {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100); /* Use custom property fallback */
+    height: 100svh; /* Static viewport height - doesn't change with keyboard */
+    max-height: 100vh;
+    max-height: calc(var(--vh, 1vh) * 100);
+    max-height: 100svh;
+  }
+
+  /* Improved scrolling behavior for mobile */
+  .scroll-smooth-touch {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide address bar on mobile browsers */
+  @supports (-webkit-touch-callout: none) {
+    .ios-full-height {
+      min-height: -webkit-fill-available;
+    }
+  }
+
+  /* Keyboard-specific adjustments */
+  .keyboard-aware {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  /* When keyboard is open, adjust content positioning */
+  body.keyboard-open .keyboard-aware {
+    transform: translateY(-10px);
+  }
+
+  /* Ensure fixed navigation doesn't interfere with keyboard */
+  body.keyboard-open nav[class*="fixed bottom"] {
+    position: fixed !important;
+    bottom: 0 !important;
+  }
+
+  /* Input focus improvements */
+  input:focus,
+  textarea:focus {
+    transform: translateZ(0); /* Enable hardware acceleration */
+    backface-visibility: hidden;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    textarea {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+  }
 }
