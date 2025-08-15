@@ -42,7 +42,7 @@ jobs:
         run: npm run build
         env:
           # Set base path for GitHub Pages deployment
-          VITE_BASE_PATH: /lunchwithgareth/
+          VITE_BASE_PATH: /
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
