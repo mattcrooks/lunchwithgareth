@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { useAuthStore } from '@/store/auth';
-import { BiometricAuth } from '@/lib/webauthn';
-import { Key, Smartphone, Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store/auth";
+import { BiometricAuth } from "@/lib/webauthn";
+import { Smartphone, Eye, EyeOff } from "lucide-react";
+import { AppIcon } from "@/components/ui/app-icon";
 
 interface AuthSetupProps {
   onComplete: () => void;
 }
 
 export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
-  const [mode, setMode] = useState<'generate' | 'import'>('generate');
-  const [privateKey, setPrivateKey] = useState('');
-  const [devicePassword, setDevicePassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [mode, setMode] = useState<"generate" | "import">("generate");
+  const [privateKey, setPrivateKey] = useState("");
+  const [devicePassword, setDevicePassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,9 +42,9 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
   const handleGenerate = async () => {
     if (!devicePassword || devicePassword !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Passwords do not match',
-        variant: 'destructive'
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
       });
       return;
     }
@@ -46,21 +53,21 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
     try {
       const keyPair = await generateNewKey();
       await importKey(keyPair.privateKey, devicePassword);
-      
+
       if (enableBiometric && biometricSupported) {
         await BiometricAuth.createCredential();
       }
 
       toast({
-        title: 'Success',
-        description: 'New Nostr key generated and secured'
+        title: "Success",
+        description: "New Nostr key generated and secured",
       });
       onComplete();
     } catch (error) {
       toast({
-        title: 'Error ',
+        title: "Error ",
         description: (error as Error).message,
-        variant: 'destructive'
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -70,9 +77,9 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
   const handleImport = async () => {
     if (!privateKey || !devicePassword || devicePassword !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Please fill all fields and ensure passwords match',
-        variant: 'destructive'
+        title: "Error",
+        description: "Please fill all fields and ensure passwords match",
+        variant: "destructive",
       });
       return;
     }
@@ -80,21 +87,21 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
     setIsLoading(true);
     try {
       await importKey(privateKey, devicePassword);
-      
+
       if (enableBiometric && biometricSupported) {
         await BiometricAuth.createCredential();
       }
 
       toast({
-        title: 'Success',
-        description: 'Nostr key imported successfully'
+        title: "Success",
+        description: "Nostr key imported successfully",
       });
       onComplete();
     } catch (error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: (error as Error).message,
-        variant: 'destructive'
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -105,10 +112,9 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 flex items-center justify-center">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
-            <Key className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold">Setup Your Nostr Identity</h1>
+          <AppIcon size="xl" className="mx-auto mb-4" />
+          <h1 className="text-2xl font-bold">Lunch with Gareth</h1>
+          <p className="text-muted-foreground">Setup Your Nostr Identity</p>
           <p className="text-muted-foreground">
             Secure your private key with device encryption
           </p>
@@ -118,17 +124,17 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
           <CardHeader>
             <div className="flex space-x-2">
               <Button
-                variant={mode === 'generate' ? 'default' : 'outline'}
+                variant={mode === "generate" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setMode('generate')}
+                onClick={() => setMode("generate")}
                 className="flex-1"
               >
                 Generate New
               </Button>
               <Button
-                variant={mode === 'import' ? 'default' : 'outline'}
+                variant={mode === "import" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setMode('import')}
+                onClick={() => setMode("import")}
                 className="flex-1"
               >
                 Import Existing
@@ -136,7 +142,7 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mode === 'import' && (
+            {mode === "import" && (
               <div className="space-y-2">
                 <Label htmlFor="privateKey">Private Key (nsec...)</Label>
                 <div className="relative">
@@ -154,7 +160,11 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
                     className="absolute top-2 right-2 h-6 w-6"
                     onClick={() => setShowPrivateKey(!showPrivateKey)}
                   >
-                    {showPrivateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPrivateKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -165,7 +175,7 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
               <div className="relative">
                 <Input
                   id="devicePassword"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter a secure password"
                   value={devicePassword}
                   onChange={(e) => setDevicePassword(e.target.value)}
@@ -178,7 +188,11 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
                   className="absolute top-0 right-0 h-full w-10"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -187,7 +201,7 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -219,11 +233,15 @@ export const AuthSetup: React.FC<AuthSetupProps> = ({ onComplete }) => {
             )}
 
             <Button
-              onClick={mode === 'generate' ? handleGenerate : handleImport}
+              onClick={mode === "generate" ? handleGenerate : handleImport}
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? 'Setting up...' : mode === 'generate' ? 'Generate Key' : 'Import Key'}
+              {isLoading
+                ? "Setting up..."
+                : mode === "generate"
+                ? "Generate Key"
+                : "Import Key"}
             </Button>
           </CardContent>
         </Card>
