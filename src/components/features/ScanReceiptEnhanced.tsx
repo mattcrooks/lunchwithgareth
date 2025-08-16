@@ -119,9 +119,9 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
     try {
       const totalFiat = parseFloat(total);
       const totalSats = calculateSats(totalFiat, fxRate);
-      
+
       // Generate hash for the receipt - use a default hash if no image
-      const rhash = imageBlob 
+      const rhash = imageBlob
         ? await HashManager.hashReceiptImage(imageBlob)
         : IdGenerator.generateReceiptId(); // Use a random ID if no image
 
@@ -165,7 +165,9 @@ export const ScanReceiptEnhanced: React.FC<ScanReceiptProps> = ({
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-semibold mb-2">Add Receipt Image (Optional)</h3>
+              <h3 className="font-semibold mb-2">
+                Add Receipt Image (Optional)
+              </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Take a photo or upload an existing image to keep a record
               </p>
