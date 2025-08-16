@@ -1,14 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Receipt, Zap, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/enhanced-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppIcon } from "../ui/app-icon";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface WelcomeScreenProps {
   onComplete: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
+  const [showModal, setShowModal] = useState(false);
+
   const features = [
     {
       icon: Receipt,
@@ -36,13 +45,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
     <div className="min-h-screen bg-gradient-primary flex flex-col">
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-        <div className="mb-8">
-          {/* <div className="w-24 h-24 bg-primary-foreground/20 rounded-full flex items-center justify-center mb-6">
-            <Receipt className="w-12 h-12 text-primary-foreground" />
-          </div> */}
+        <div className="mb-8" onClick={() => setShowModal(true)}>
           <AppIcon
             size="xl"
-            className="mx-auto mb-4 bg-primary-foreground/20"
+            className="mx-auto mb-4 bg-primary-foreground/20 cursor-pointer"
           />
           <h1 className="text-4xl font-bold text-primary-foreground mb-4">
             Lunch with Gareth
@@ -86,14 +92,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           >
             Get Started
           </Button>
-          {/* <Button
-            variant="ghost"
-            size="lg"
-            className="w-full text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            Import Existing Key
-          </Button> */}
         </div>
+
+        {/* Cheeky Tag Line */}
+        <p className="text-sm text-primary-foreground/70 italic mt-6 max-w-sm mx-auto">
+          Because Gareth's wallet has more excuses than the Fed's balance sheet.
+        </p>
       </div>
 
       {/* Footer */}
@@ -102,6 +106,36 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           Powered by Nostr • Your keys, your control
         </p>
       </div>
+
+      {/* Popup Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-md mx-auto bg-card text-card-foreground p-8 rounded-xl shadow-2xl border-primary/20">
+          <DialogHeader className="flex flex-col items-center text-center space-y-4">
+            <AppIcon size="lg" />
+            <DialogTitle className="text-2xl font-bold">
+              Why Lunch with Gareth?
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription asChild>
+            <div className="text-center text-sm text-muted-foreground space-y-4 pt-4">
+              <p className="italic">
+                Ah, Gareth. Arse tighter than a fish. Shows up to lunch,
+                “forgets” his wallet... Next time, his credit card's been
+                through the wash and the chip's broken. A new story every time -
+                and I'm the mug footing the bill.
+              </p>
+              <p>
+                <strong>Enter Lunch with Gareth</strong> the world's first
+                anti-freeloader app. Snap the receipt, fire off a Nostr Event,
+                and watch him squirm until he zaps you back the sats.
+              </p>
+              <p className="font-semibold text-primary pt-2">
+                Don't let him slide. Make him pay - literally.
+              </p>
+            </div>
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
