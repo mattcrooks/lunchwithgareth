@@ -49,6 +49,7 @@ export const IndexEnhanced = () => {
     needsBiometricAuth,
     servicesInitialized,
     initializeServices,
+    hasStoredKey, // <-- Add this to your auth store if not present
   } = useAuthStore();
 
   // Monitor authentication state changes to hide biometric gate
@@ -74,9 +75,39 @@ export const IndexEnhanced = () => {
     init();
   }, [currentUser, isAuthenticated, servicesInitialized, initializeServices]);
 
-  // Show auth setup if no user
-  if (!currentUser) {
-    return <AuthSetup onComplete={() => setCurrentView("welcome")} />;
+  // Always show WelcomeScreen first
+  if (currentView === "welcome") {
+    return (
+      <WelcomeScreen
+        onComplete={() => {
+          // After welcome, check for key and show appropriate screen
+          if (hasStoredKey) {
+            setCurrentView("login");
+          } else {
+            setCurrentView("setup");
+          }
+        }}
+      />
+    );
+  }
+
+  // Show login/auth if key exists but not authenticated
+  if (currentView === "login" && hasStoredKey && !isAuthenticated) {
+    return (
+      <BiometricGate
+        onAuthenticated={() => {
+          setShowBiometricGate(false);
+          setCurrentView("scan");
+        }}
+        title="Login"
+        description="Authenticate to continue"
+      />
+    );
+  }
+
+  // Show setup if no key
+  if (currentView === "setup" && !hasStoredKey) {
+    return <AuthSetup onComplete={() => setCurrentView("scan")} />;
   }
 
   // Show biometric gate if authentication required
@@ -94,11 +125,6 @@ export const IndexEnhanced = () => {
         description="Authentication required for secure operations"
       />
     );
-  }
-
-  // Show welcome screen for first-time users or when explicitly requested
-  if (currentView === "welcome") {
-    return <WelcomeScreen onComplete={() => setCurrentView("scan")} />;
   }
 
   // Handle completion result display
